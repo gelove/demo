@@ -18,7 +18,7 @@ steps:
     debug: true
     # insecure: true
     repo: library/demo
-    registry: hub.finthe.com
+    registry: 192.168.66.100
     # mirror: https://registry.docker-cn.com # 国内镜像
     # build_args:
     #   - HTTP_PROXY=http://yourproxy.com # http代理
