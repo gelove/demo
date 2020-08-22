@@ -1,4 +1,4 @@
-FROM hub.finthe.com/library/golang:1.15.0-alpine3.12 as builder
+FROM golang:1.15.0-alpine3.12 as builder
 LABEL maintainer="Allen <61114099@qq.com>"
 ENV GOPROXY=https://goproxy.io CGO_ENABLED=0 GO111MODULE=on GOOS=linux GOARCH=amd64 
 RUN apk add --verbose --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ upx && \
@@ -18,7 +18,7 @@ RUN go install github.com/GeertJohan/go.rice/rice && rice embed-go && \
     go build -a -ldflags "-s -w" -o demo . && upx demo
 
 # FROM plugins/base:multiarch as production
-FROM hub.finthe.com/library/alpine:3.12.0 as production
+FROM alpine:3.12.0 as production
 LABEL maintainer="Allen <61114099@qq.com>"
 RUN apk add --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ ca-certificates tzdata && \
     rm -rf /var/cache/apk/*

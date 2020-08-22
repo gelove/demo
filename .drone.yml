@@ -31,7 +31,7 @@ steps:
       from_secret: docker_password
 
 - name: deploy
-  image: hub.finthe.com/library/drone-plugin-kube:0.2.0
+  image: danielgormly/drone-plugin-kube:0.2.0
   settings:
     build_name: demo
     build_number: ${DRONE_BUILD_NUMBER}
