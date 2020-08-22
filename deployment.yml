@@ -1,0 +1,50 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{build_name}}-route
+  namespace: default
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`{{build_name}}.alin.app`)
+    kind: Rule
+    services:
+    - name: {{build_name}}
+      port: 8000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{build_name}}
+spec:
+  selector:
+    app: {{build_name}}
+  ports:
+  - name: demo
+    protocol: TCP
+    port: 9090
+    targetPort: 8000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{build_name}}
+  labels:
+    app: {{build_name}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{build_name}}
+  template:
+    metadata:
+      labels:
+        app: {{build_name}}
+    spec:
+      containers:
+      - name: {{build_name}}
+        image: hub.finthe.com/library/demo:{{build_number}}
+        imagePullPolicy: IfNotPresent

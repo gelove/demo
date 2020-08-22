@@ -1,0 +1,119 @@
+kind: pipeline
+name: demo
+
+trigger:
+  branch:
+    include:
+      - feature/*
+      - master
+      - dev
+  event:
+    include:
+      - push
+      - pull_request
+
+steps:
+  - name: restore-cache
+    image: drillster/drone-volume-cache
+    volumes:
+      - name: cache
+        path: /cache
+    settings:
+      restore: true
+      mount:
+        - ./vendor
+
+  # - name: build
+  #   image: golang:1.13
+  #   commands:
+  #   - make build
+
+  - name: publish
+    image: plugins/docker
+    when:
+      branch:
+        - master
+    settings:
+      tags: latest
+      purge: false
+      debug: true
+      mirror: https://registry.docker-cn.com
+      target: production
+      repo:  gelove/demo
+      # dockerfile: Dockerfile # dockerfile to be used, defaults to Dockerfile
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+  - name: deploy
+    image: appleboy/drone-ssh
+    environment:
+      DOCKER_USERNAME:
+        from_secret: docker_username
+      DOCKER_PASSWORD:
+        from_secret: docker_password
+    settings:
+      host:
+        from_secret: ssh_host
+      port: 22
+      command_timeout: 10m
+      username:
+        from_secret: ssh_username
+      password:
+        from_secret: ssh_password
+      envs: [DOCKER_USERNAME, DOCKER_PASSWORD]
+      script:
+        - mkdir -p /opt/go-docker/demo
+        - cd /opt/go-docker/demo
+        - docker ps -a |grep demo |grep -v grep
+        # 判断 demo 容器是否存在
+        - \[ $? -eq 0 \] && docker stop demo && docker rm demo
+        - docker images -a |grep demo |grep -v grep
+        - \[ $? -eq 0 \] && docker rmi -f gelove/demo
+        - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        - docker pull gelove/demo
+        - docker run -d --name demo -p 9090:9090 gelove/demo
+        - docker logout
+
+  # rollback-online:
+  #   image: docker-registry-cn.easemob.com/kubernetes/im/webim-rollback:latest
+  #   pull: true
+  #   environment:
+  #     - DOCKER_LAUNCH_DEBUG=true
+  #   secrets: [ ssh_key, jumpserver_host, jumpserver_port, online_host ]
+  #   debug: true
+  #   when:
+  #     branch: rollback
+ 
+  - name: restore-cache
+    image: drillster/drone-volume-cache
+    volumes:
+      - name: cache
+        path: /cache
+    settings:
+      rebuild: true
+      mount:
+        - ./vendor
+ 
+  - name: notify
+    image: drillster/drone-email
+    host: smtp.163.com
+    username:
+      from_secret: email_username
+    password:
+      from_secret: email_password
+    from:
+      from_secret: email_username
+    recipients: [ 61114099@qq.com, gelove@live.cn ]
+    # recipients:
+    #   - 61114099@qq.com
+    #   - gelove@live.cn
+    recipients_only: true
+    when:
+      status:  [ failure, success ]
+
+volumes:
+  - name: cache
+    host:
+      path: /var/lib/cache

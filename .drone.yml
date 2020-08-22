@@ -1,0 +1,72 @@
+kind: pipeline
+type: kubernetes
+name: demo
+
+steps:
+# - name: test
+#   image: golang:1.15
+#   volumes:
+#   - name: temp
+#     path: /go
+#   commands:
+#   - go test
+
+- name: publish
+  image: plugins/docker
+  when:
+    branch:
+      - master
+  settings:
+    purge: false
+    debug: true
+    insecure: true
+    repo: library/demo
+    registry: hub.finthe.com
+    # mirror: https://registry.docker-cn.com # 国内镜像
+    # build_args:
+    #   - HTTP_PROXY=http://yourproxy.com # http代理
+    tags: ${DRONE_TAG=latest}
+    target: production
+    dockerfile: Dockerfile # dockerfile to be used, defaults to Dockerfile
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+
+- name: deploy
+  image: hub.finthe.com/library/drone-plugin-kube:0.2.0
+  when:
+    branch:
+      - master
+  settings:
+    build_number: ${DRONE_BUILD_NUMBER}
+    template: ./deployment.yml  # relative to repo root
+    ca:
+      from_secret: k8s_cert     # BASE64 encoded string of the K8s CA cert /etc/kubernetes/pki/ca.crt
+    server:
+      from_secret: k8s_server   # K8s master node address
+    token:
+      from_secret: k8s_token    # Service account token to a service account that can manage deployments
+
+- name: notify
+  image: drillster/drone-email
+  host: smtp.163.com
+  # skip_verify: true # skip SMTP server certificate verification
+  username:
+    from_secret: email_username
+  password:
+    from_secret: email_password
+  from:
+    from_secret: email_username
+  recipients_only: true # 只发给接收人
+  recipients: [ 61114099@qq.com, gelove@live.cn ] # 接收人
+  # attachment: build-result.xml # 附件
+  when:
+    status:  [ changed, failure ]
+
+trigger:
+  event:
+    include:
+      - tag
+      - push
+      - pull_request
