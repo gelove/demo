@@ -16,7 +16,7 @@ steps:
   settings:
     purge: false
     debug: true
-    insecure: true
+    # insecure: true
     repo: library/demo
     registry: hub.finthe.com
     # mirror: https://registry.docker-cn.com # 国内镜像
