@@ -4,7 +4,7 @@ name: demo
 
 steps:
 # - name: linter
-#   image: golang:1.15
+#   image: 192.168.66.100/library/golang:1.15.0-alpine3.12
 #   environment:
 #     GOPROXY: https://mirrors.aliyun.com/goproxy/
 #   commands:
@@ -12,7 +12,7 @@ steps:
 #     - golangci-lint run
 
 # - name: test
-#   image: golang:1.15
+#   image: 192.168.66.100/library/golang:1.15.0-alpine3.12
 #   environment:
 #     GOPROXY: https://mirrors.aliyun.com/goproxy/
 #   volumes:
@@ -22,14 +22,14 @@ steps:
 #   - go test
 
 - name: publish
-  image: plugins/docker:18.09.2
+  image: 192.168.66.100/plugins/docker:18.09.2
   settings:
     purge: false
     debug: true
-    # insecure: true
-    registry: hub.finthe.com
-    repo: hub.finthe.com/library/demo
-    cache_from: hub.finthe.com/library/demo
+    insecure: true
+    registry: 192.168.66.100
+    repo: 192.168.66.100/library/demo
+    cache_from: 192.168.66.100/library/demo
     # mirror: https://registry.docker-cn.com # 国内镜像
     # build_args:
     #   - HTTP_PROXY=http://yourproxy.com # http代理
@@ -42,10 +42,10 @@ steps:
       from_secret: docker_password
 
 - name: deploy
-  image: danielgormly/drone-plugin-kube:0.2.0
+  image: 192.168.66.100/plugins/drone-plugin-kube:0.2.0
   settings:
     build_name: demo
-    build_number: ${DRONE_BUILD_NUMBER}
+    build_tag: ${DRONE_TAG=latest}
     template: ./deployment.yml  # relative to repo root
     ca:
       from_secret: k8s_cert     # BASE64 encoded string of the K8S CA cert /etc/kubernetes/pki/ca.crt
@@ -55,7 +55,7 @@ steps:
       from_secret: k8s_token    # Service account token to a service account that can manage deployments
 
 - name: notify
-  image: drillster/drone-email
+  image: 192.168.66.100/plugins/drone-email
   host: smtp.163.com
   # skip_verify: true # skip SMTP server certificate verification
   username:

@@ -1,0 +1,71 @@
+
+kind: pipeline
+name: default
+
+clone:
+  depth: 10
+
+steps:
+  # 开发版
+  - name: docker-${DRONE_BRANCH}
+    image: plugins/docker:18.09
+    settings:
+      username: drone
+      password:
+        from_secret: DOCKER_PASSWORD
+      registry: 192.168.66.100
+      repo: 192.168.66.100/test/demo
+      insecure: true
+      debug: true
+      dockerfile: Dockerfile
+      tags:
+        - canary
+    when:
+      branch:
+        - master
+        - dev
+      event:
+        - push
+
+  # 稳定版
+  - name: docker-release
+    image: plugins/docker:18.09
+    settings:
+      username: drone
+      password:
+        from_secret: DOCKER_PASSWORD
+      registry: 192.168.66.100
+      repo: 192.168.66.100/test/demo
+      insecure: true
+      dockerfile: Dockerfile
+      tags:
+        - ${DRONE_TAG}
+        - latest
+    when:
+      event:
+        - tag
+
+  # 开发版部署
+  - name: k8s-deploy-${DRONE_BRANCH}
+    image: 192.168.66.100/pub/kubectl:v1
+    commands:
+      - namespace=dev
+      - version=canary
+      - sh deploy.sh $namespace $version
+    when:
+      branch:
+        - master
+        - dev
+      event:
+        - push
+
+  # 稳定版部署
+  - name: k8s-deploy-release
+    image: 192.168.66.100/pub/kubectl:v1
+    commands:
+      - namespace=test
+      - version=${DRONE_TAG}
+      - sh deploy.sh $namespace $version
+    when:
+      event:
+        - tag

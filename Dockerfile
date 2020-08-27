@@ -1,4 +1,4 @@
-FROM hub.finthe.com/library/golang:1.15.0-alpine3.12 as builder
+FROM 192.168.66.100/library/golang:1.15.0-alpine3.12 as builder
 LABEL maintainer="Allen <61114099@qq.com>"
 ENV GOPROXY=https://mirrors.aliyun.com/goproxy/ CGO_ENABLED=0 GO111MODULE=on GOOS=linux GOARCH=amd64 
 RUN apk add --verbose --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ upx && \
@@ -18,7 +18,7 @@ RUN go install github.com/GeertJohan/go.rice/rice && rice embed-go && \
     go build -a -ldflags "-s -w" -o demo . && upx demo
 
 # FROM plugins/base:multiarch as production
-FROM hub.finthe.com/library/alpine:3.12.0 as production
+FROM 192.168.66.100/library/alpine:3.12.0 as production
 LABEL maintainer="Allen <61114099@qq.com>"
 # 修改alpine源为中科大源
 # RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
