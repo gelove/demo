@@ -20,18 +20,18 @@ RUN go install github.com/GeertJohan/go.rice/rice && rice embed-go && \
 # FROM plugins/base:multiarch as production
 FROM 192.168.66.100/library/alpine:3.12.0 as production
 LABEL maintainer="Allen <61114099@qq.com>"
-# 修改alpine源为中科大源
-# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
-#   apk update && \
-#   apk upgrade && \
-#   apk add ca-certificates && update-ca-certificates && \
-#   apk add --update tzdata && \
-#   rm -rf /var/cache/apk/*
-RUN apk add --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ ca-certificates tzdata && \
-    rm -rf /var/cache/apk/*
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-ENV TZ=Asia/Shanghai
 WORKDIR /usr/bin/
+# 修改alpine源为中科大源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
+  apk update && \
+  apk upgrade && \
+  apk add ca-certificates && update-ca-certificates && \
+  apk add --update tzdata && \
+  rm -rf /var/cache/apk/*
+# RUN apk add --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ ca-certificates tzdata && \
+#     rm -rf /var/cache/apk/*
+# RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+ENV TZ=Asia/Shanghai
 # /go/bin/demo  =>  /usr/bin/demo
 COPY --from=builder /go/bin/demo .
 # ENTRYPOINT ["/usr/bin/demo"]

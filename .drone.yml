@@ -1,5 +1,5 @@
 kind: pipeline
-type: kubernetes
+type: docker
 name: demo
 
 steps:
@@ -47,10 +47,10 @@ steps:
     build_name: demo
     build_tag: ${DRONE_TAG=latest}
     template: ./deployment.yml  # relative to repo root
-    ca:
-      from_secret: k8s_cert     # BASE64 encoded string of the K8S CA cert /etc/kubernetes/pki/ca.crt
     server:
       from_secret: k8s_server   # K8S master node address
+    ca:
+      from_secret: k8s_cert     # BASE64 encoded string of the K8S CA cert /etc/kubernetes/pki/ca.crt
     token:
       from_secret: k8s_token    # Service account token to a service account that can manage deployments
 
