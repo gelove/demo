@@ -26,7 +26,7 @@ steps:
   settings:
     purge: false
     debug: true
-    insecure: true
+    # insecure: true
     registry: 192.168.66.100
     repo: 192.168.66.100/library/demo
     # cache_from: 192.168.66.100/library/demo
