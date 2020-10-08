@@ -1,38 +1,29 @@
-FROM 192.168.66.100/library/golang:1.15.0-alpine3.12 as builder
+FROM golang:1.15.0-alpine3.12 as builder
 LABEL maintainer="Allen <61114099@qq.com>"
-ENV GOPROXY=https://mirrors.aliyun.com/goproxy/ CGO_ENABLED=0 GO111MODULE=on GOOS=linux GOARCH=amd64 
-RUN apk add --verbose --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ upx && \
-    rm -rf /var/cache/apk/*
-VOLUME demo_vendor:${GOPATH}
-WORKDIR /go/cache
+ENV GOPROXY=https://goproxy.cn GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+# ENV GOPROXY=https://mirrors.aliyun.com/goproxy/ GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+# RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+# 修改alpine源为阿里源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN apk add --verbose --no-cache upx && rm -rf /var/cache/apk/*
+WORKDIR /go/build
 COPY go.mod .
 COPY go.sum .
 # Get dependancies - will also be cached if we won't change mod/sum
 RUN go mod download
-
-WORKDIR /go/bin/
 # Copy the source code
 COPY . .
-# Build the binary and compress ==> /go/bin/demo
+# Build the binary and compress
 RUN go install github.com/GeertJohan/go.rice/rice && rice embed-go && \
     go build -a -ldflags "-s -w" -o demo . && upx demo
 
 # FROM plugins/base:multiarch as production
-FROM 192.168.66.100/library/alpine:3.12.0 as production
+FROM alpine:3.12.0 as production
 LABEL maintainer="Allen <61114099@qq.com>"
-WORKDIR /usr/bin/
-# 修改alpine源为中科大源
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && \
-  apk update && \
-  apk upgrade && \
-  apk add ca-certificates && update-ca-certificates && \
-  apk add --update tzdata && \
-  rm -rf /var/cache/apk/*
-# RUN apk add --no-cache --repository https://mirrors.ustc.edu.cn/alpine/v3.12/main/ ca-certificates tzdata && \
-#     rm -rf /var/cache/apk/*
-# RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN apk add --verbose --no-cache ca-certificates tzdata && rm -rf /var/cache/apk/*
 ENV TZ=Asia/Shanghai
-# /go/bin/demo  =>  /usr/bin/demo
-COPY --from=builder /go/bin/demo .
-# ENTRYPOINT ["/usr/bin/demo"]
-ENTRYPOINT ["./demo"]
+# RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+WORKDIR /app
+COPY --from=builder /go/build/demo .
+ENTRYPOINT ["/app/demo"]
