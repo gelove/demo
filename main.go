@@ -79,7 +79,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		fmt.Println("username:", r.FormValue("username"))
 		fmt.Println("password:", r.FormValue("password"))
-		fmt.Fprintf(w, "login success\n")
+		fmt.Fprintf(w, "Login Success\n")
 		fmt.Fprintf(w, r.FormValue("username")+" "+r.FormValue("password"))
 	}
 }
