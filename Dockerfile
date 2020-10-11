@@ -6,7 +6,7 @@ ENV GOPROXY=https://goproxy.cn GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=am
 # 修改alpine源为阿里源
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk add --verbose --no-cache upx && rm -rf /var/cache/apk/*
-VOLUME /data/go:${GOPATH}
+VOLUME demo:${GOPATH}
 WORKDIR /go/build
 COPY go.mod .
 COPY go.sum .
