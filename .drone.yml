@@ -4,7 +4,7 @@ name: demo
 
 steps:
 # - name: linter
-#   image: 192.168.66.100/library/golang:1.15.0-alpine3.12
+#   image: hub.alin.app/library/golang:1.15.0-alpine3.12
 #   environment:
 #     GOPROXY: https://mirrors.aliyun.com/goproxy/
 #   commands:
@@ -12,7 +12,7 @@ steps:
 #     - golangci-lint run
 
 # - name: test
-#   image: 192.168.66.100/library/golang:1.15.0-alpine3.12
+#   image: hub.alin.app/library/golang:1.15.0-alpine3.12
 #   environment:
 #     GOPROXY: https://mirrors.aliyun.com/goproxy/
 #   volumes:
@@ -22,14 +22,15 @@ steps:
 #   - go test
 
 - name: publish
-  image: 192.168.66.100/plugins/docker:18.09.2
+  image: hub.alin.app/plugins/docker:18.09.2
+  network_mode: bridge
   settings:
     purge: false
     debug: true
     # insecure: true
-    registry: 192.168.66.100
-    repo: 192.168.66.100/library/demo
-    # cache_from: 192.168.66.100/library/demo
+    registry: hub.alin.app
+    repo: hub.alin.app/library/demo
+    # cache_from: hub.alin.app/library/demo
     # mirror: https://registry.docker-cn.com # 国内镜像
     # build_args:
     #   - HTTP_PROXY=http://yourproxy.com # http代理
@@ -40,9 +41,12 @@ steps:
       from_secret: docker_username
     password:
       from_secret: docker_password
+  volumes:
+  - name: dockersock
+      path: /var/run/docker.sock
 
 - name: deploy
-  image: 192.168.66.100/plugins/drone-plugin-kube:0.2.0
+  image: hub.alin.app/plugins/drone-plugin-kube:0.2.0
   settings:
     build_name: demo
     build_tag: ${DRONE_TAG=latest}
@@ -55,7 +59,7 @@ steps:
       from_secret: k8s_token    # Service account token to a service account that can manage deployments
 
 - name: notify
-  image: 192.168.66.100/plugins/drone-email
+  image: hub.alin.app/plugins/drone-email:latest
   host: smtp.163.com
   # skip_verify: true # skip SMTP server certificate verification
   username:
@@ -69,6 +73,11 @@ steps:
   # attachment: build-result.xml # 附件
   when:
     status:  [ changed, failure ]
+
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
 
 trigger:
   event:

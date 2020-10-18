@@ -1,26 +1,26 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: {{build_name}}-route
+  name: demo-route
   namespace: default
 spec:
   entryPoints:
     - web
   routes:
-  - match: Host(`{{build_name}}.alin.app`)
+  - match: Host(`demo.alin.app`)
     kind: Rule
     services:
-    - name: {{build_name}}
+    - name: demo
       port: 8000
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{build_name}}
+  name: demo-svc
 spec:
   selector:
-    app: {{build_name}}
+    app: demo
   ports:
   - name: demo
     protocol: TCP
@@ -31,20 +31,20 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{build_name}}
+  name: demo-deploy
   labels:
-    app: {{build_name}}
+    app: demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{build_name}}
+      app: demo
   template:
     metadata:
       labels:
-        app: {{build_name}}
+        app: demo
     spec:
       containers:
-      - name: {{build_name}}
-        image: 192.168.66.100/library/demo:{{build_tag}}
-        imagePullPolicy: IfNotPresent
+      - name: demo
+        image: registry.cn-hangzhou.aliyuncs.com/finthe/demo:latest
+        # imagePullPolicy: IfNotPresent
