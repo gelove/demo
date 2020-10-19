@@ -2,7 +2,7 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: demo-route
-  namespace: allen
+  namespace: default
 spec:
   entryPoints:
     - web
@@ -10,7 +10,7 @@ spec:
   - match: Host(`demo.alin.app`)
     kind: Rule
     services:
-    - name: demo
+    - name: demo-svc
       port: 8000
 
 ---
@@ -18,21 +18,26 @@ apiVersion: v1
 kind: Service
 metadata:
   name: demo-svc
-  namespace: allen
+  namespace: default
 spec:
   selector:
     app: demo
   ports:
   - name: demo
     protocol: TCP
+    # Service暴露的端口
     port: 8000
+    # 对应容器暴露的端口
     targetPort: 9090
+    # 外部访问需要暴露的端口
+    # nodePort: 39090
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: demo-deploy
+  namespace: default
   labels:
     app: demo
 spec:
