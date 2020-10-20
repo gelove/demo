@@ -47,6 +47,7 @@ spec:
       app: demo
   template:
     metadata:
+      name: demo
       labels:
         app: demo
     spec:
