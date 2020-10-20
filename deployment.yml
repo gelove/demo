@@ -47,11 +47,10 @@ spec:
       app: demo
   template:
     metadata:
-      name: demo
       labels:
         app: demo
     spec:
       containers:
       - name: demo
         image: registry.cn-hangzhou.aliyuncs.com/finthe/demo:latest
-        # imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
