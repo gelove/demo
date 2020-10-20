@@ -58,7 +58,7 @@ type myHandler struct{}
 
 // 实现 http.Handler
 func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Welcome To Demo test! current url: "+r.URL.String()+"\n")
+	io.WriteString(w, "Welcome To Demo! current url: "+r.URL.String()+"\n")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
