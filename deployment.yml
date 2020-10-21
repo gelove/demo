@@ -53,4 +53,4 @@ spec:
       containers:
       - name: demo
         image: registry.cn-hangzhou.aliyuncs.com/finthe/demo:latest
-        imagePullPolicy: Always
+        # imagePullPolicy: Always
