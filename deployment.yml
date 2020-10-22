@@ -52,5 +52,5 @@ spec:
     spec:
       containers:
       - name: demo
-        image: __REGISTRY_IMAGE__ 
+        image: __REGISTRY_IMAGE__
         imagePullPolicy: Always
