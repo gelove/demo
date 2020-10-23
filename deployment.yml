@@ -50,6 +50,9 @@ spec:
       labels:
         app: demo
     spec:
+      serviceAccountName: tekton-sa
+      imagePullSecrets:
+      - name: registry-user
       containers:
       - name: demo
         image: __REGISTRY_IMAGE__
